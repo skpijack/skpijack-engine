@@ -1,5 +1,4 @@
 #include "Shader.hpp"
-
 #include "Logger.hpp"
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath) {
