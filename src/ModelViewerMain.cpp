@@ -13,6 +13,8 @@ constexpr int INIT_WINDOW_HEIGHT = 800;
 
 Window::window_t pWindow;
 
+int window_dimensions[] = { INIT_WINDOW_WIDTH, INIT_WINDOW_HEIGHT };
+
 float vertices[] = {
     // positions            // texture coords
      0.5f,  0.5f, 0.0f,     1.0f, 1.0f,   // top right
@@ -31,6 +33,8 @@ void process_input(Window::window_t pwindow);
 
 void framebuffer_size_callback(Window::window_t pwindow, int width, int height) {
     glViewport(0, 0, width, height);
+    window_dimensions[0] = width;
+    window_dimensions[1] = height;
 }
 
 void process_input(Window::window_t pwindow) {
@@ -84,6 +88,7 @@ int main(int argc, char* argv[]) {
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+    ourShader.use();
     ourShader.setValue("texture1", 0);
     ourShader.setValue("texture2", 1);
 
@@ -93,18 +98,21 @@ int main(int argc, char* argv[]) {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glm::mat4 trans = glm::mat4(1.0f);
-        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-
         texture1.bind(GL_TEXTURE0);
         texture2.bind(GL_TEXTURE1);
 
         ourShader.use();
-        ourShader.setValue("texture1", 0);
-        ourShader.setValue("texture2", 1);
-        uint32_t transformLoc = glGetUniformLocation(ourShader.ID, "transform");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
+        glm::mat4 model = glm::mat4(1.0f);
+        glm::mat4 view = glm::mat4(1.0f);
+        glm::mat4 projection = glm::mat4(1.0f);
+        model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        projection = glm::perspective(glm::radians(45.0f), (float)window_dimensions[0]/(float)window_dimensions[1], 0.1f, 100.0f);
+
+        ourShader.setValue("model", model);
+        ourShader.setValue("view", view);
+        ourShader.setValue("projection", projection);
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
