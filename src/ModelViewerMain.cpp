@@ -1,7 +1,12 @@
-int WINDOW_WIDTH = 800;
+int WINDOW_WIDTH = 1600;
 int WINDOW_HEIGHT = 800;
 
 #include "GLAD/glad.h"
+
+#include <imgui.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
+
 #include "Window.hpp"
 #include "Logger.hpp"
 #include "Shader.hpp"
@@ -134,7 +139,7 @@ void process_input(Window::window_t pwindow) {
 int main(int argc, char* argv[]) {
 
     // Open window
-    Window window("Eclipse Model Viewer", WINDOW_WIDTH, WINDOW_HEIGHT, true, true);
+    Window window("Eclipse Model Viewer", WINDOW_WIDTH, WINDOW_HEIGHT, true, false);
 
     // Init glad
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -149,6 +154,14 @@ int main(int argc, char* argv[]) {
     glEnable(GL_MULTISAMPLE);
 
     pWindow = window.getPointer();
+
+    // ImGui Initialize
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+    ImGui_ImplGlfw_InitForOpenGL(pWindow, true);
+    ImGui_ImplOpenGL3_Init("#version 330");
 
     glfwSetFramebufferSizeCallback(pWindow, framebuffer_size_callback);
     glfwSetCursorPosCallback(pWindow, mouse_callback);
@@ -194,6 +207,8 @@ int main(int argc, char* argv[]) {
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        glfwPollEvents();
+
         process_input(pWindow);
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -230,12 +245,32 @@ int main(int argc, char* argv[]) {
         glBindVertexArray(lightCubeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
-        window.update();
+        // Start ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        // Create UI
+        ImGui::Begin("Debugger   ");
+        ImGui::Text("FPS = %d FPS", mathes::clamp((int)(1/deltaTime), 0, 100000000));
+        ImGui::End();
+
+        // Render ImGui
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+
+        //window.update();
+        glfwSwapBuffers(pWindow);
     }
 
     glDeleteVertexArrays(1, &cubeVAO);
     glDeleteVertexArrays(1, &lightCubeVAO);
     glDeleteBuffers(1, &VBO);
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     // Cleanup
 
