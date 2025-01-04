@@ -165,7 +165,7 @@ int main(int argc, char* argv[]) {
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
     io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
 
-    ImGui::StyleColorsLight();
+    ImGui::StyleColorsDark();
 
     ImGui_ImplGlfw_InitForOpenGL(pWindow, true);
     ImGui_ImplOpenGL3_Init("#version 330");
@@ -202,11 +202,13 @@ int main(int argc, char* argv[]) {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), nullptr);
     glEnableVertexAttribArray(0);
 
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     //glm::mat4 projection = glm::mat4(1.0f);
 
     glEnable(GL_DEPTH_TEST);
+    
+    bool wireframe = false;
+    float objectColorArr[] = { 1.0f, 0.5f, 0.31f };
 
     while (!window.shouldClose()) {
         float currentFrame = glfwGetTime();
@@ -231,7 +233,7 @@ int main(int argc, char* argv[]) {
         ImGui::NewFrame();
 
         lightningShader.use();
-        lightningShader.setValue("objectColor", 1.0f, 0.5f, 0.31f);
+        lightningShader.setValue("objectColor", objectColorArr[0], objectColorArr[1], objectColorArr[2]);
         lightningShader.setValue("lightColor", 1.0f, 1.0f, 1.0f);
 
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
@@ -266,7 +268,14 @@ int main(int argc, char* argv[]) {
         ImGui::Text("FPS: %d", (int)(1/deltaTime));
         ImGui::Text("Frame time: %fs", (float)(deltaTime));
         ImGui::Checkbox("Mouse Captured", &cursorCapture);
+        ImGui::Checkbox("Wireframe", &wireframe);
+        ImGui::ColorEdit3("Cube Color", objectColorArr);
         ImGui::End();
+
+        if (wireframe)
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        else
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
