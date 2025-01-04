@@ -3,8 +3,8 @@
 
 Window::window_t pointerWindow;
 
-Window::Window(std::string title, int width, int height, bool isResizable, bool isFullscreen) {
-    
+Window::Window(std::string title, int width, int height, bool isResizable, bool isFullscreen, bool vsync) {
+
     if (!glfwInit())
         mog::it("failed to initialize window manager!", 0);
 
@@ -45,6 +45,9 @@ Window::Window(std::string title, int width, int height, bool isResizable, bool 
     }
 
     glfwMakeContextCurrent(pointerWindow);
+
+    if (vsync)
+        glfwSwapInterval(1);
 }
 
 void Window::update() {

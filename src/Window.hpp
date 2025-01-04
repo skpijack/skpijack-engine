@@ -3,11 +3,11 @@
 #include <string>
 
 class Window {
-    public:
+public:
     typedef GLFWwindow* window_t;
     uint32_t w, h;
 
-    Window(std::string title, int width, int height, bool isResizable, bool isFullscreen);
+    Window(std::string title, int width, int height, bool isResizable, bool isFullscreen, bool vsync);
     void update();
     bool shouldClose();
     window_t getPointer();

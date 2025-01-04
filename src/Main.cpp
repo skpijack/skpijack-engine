@@ -118,17 +118,27 @@ static void mouse_callback(Window::window_t pwindow, double xposIn, double yposI
 static void scroll_callback(Window::window_t pwindow, double xoffset, double yoffset) {
     camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
-
+// Global or static variables to track key states
+bool escapeKeyPressed = false;
 void process_input(Window::window_t pwindow) {
+
+
     if (glfwGetKey(pwindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-        if (!cursorCapture) {
-            glfwSetInputMode(pwindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        if (!escapeKeyPressed) { // Only act if the key wasn't already pressed
+            if (!cursorCapture) {
+                glfwSetInputMode(pwindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            }
+            else {
+                glfwSetInputMode(pwindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            }
+            cursorCapture = !cursorCapture;
+            escapeKeyPressed = true; // Mark the key as processed
         }
-        else {
-            glfwSetInputMode(pwindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        }
-        cursorCapture = !cursorCapture;
     }
+    else if (glfwGetKey(pwindow, GLFW_KEY_ESCAPE) == GLFW_RELEASE) {
+        escapeKeyPressed = false; // Reset when the key is released
+    }
+
 
     float deltaCameraSpeed = cameraSpeed * deltaTime;
     if (glfwGetKey(pwindow, GLFW_KEY_W) == GLFW_PRESS) camera.ProcessKeyboard(FORWARD, deltaTime);
@@ -140,7 +150,7 @@ void process_input(Window::window_t pwindow) {
 int main(int argc, char* argv[]) {
 
     // Open window
-    Window window("Eclipse Model Viewer", WINDOW_WIDTH, WINDOW_HEIGHT, true, false);
+    Window window("Eclipse Engine Demo", WINDOW_WIDTH, WINDOW_HEIGHT, true, false, false);
 
     // Init glad
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -206,7 +216,7 @@ int main(int argc, char* argv[]) {
     //glm::mat4 projection = glm::mat4(1.0f);
 
     glEnable(GL_DEPTH_TEST);
-    
+
     bool wireframe = false;
     float objectColorArr[] = { 1.0f, 0.5f, 0.31f };
 
@@ -265,7 +275,7 @@ int main(int argc, char* argv[]) {
 
         // Your ImGui widgets here
         ImGui::Begin("Debugger");
-        ImGui::Text("FPS: %d", (int)(1/deltaTime));
+        ImGui::Text("FPS: %d", (int)(1 / deltaTime));
         ImGui::Text("Frame time: %fs", (float)(deltaTime));
         ImGui::Checkbox("Mouse Captured", &cursorCapture);
         ImGui::Checkbox("Wireframe", &wireframe);
