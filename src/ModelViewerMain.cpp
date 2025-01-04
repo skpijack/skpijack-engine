@@ -111,7 +111,8 @@ static void mouse_callback(Window::window_t pwindow, double xposIn, double yposI
     lastX = xpos;
     lastY = ypos;
 
-    camera.ProcessMouseMovement(xoffset, yoffset);
+    if (cursorCapture)
+        camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 static void scroll_callback(Window::window_t pwindow, double xoffset, double yoffset) {
@@ -159,6 +160,12 @@ int main(int argc, char* argv[]) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.Fonts->AddFontFromFileTTF("../assets/Poppins-Regular.ttf", 15);
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
+
+    ImGui::StyleColorsLight();
 
     ImGui_ImplGlfw_InitForOpenGL(pWindow, true);
     ImGui_ImplOpenGL3_Init("#version 330");
@@ -202,17 +209,26 @@ int main(int argc, char* argv[]) {
     glEnable(GL_DEPTH_TEST);
 
     while (!window.shouldClose()) {
-        // delta testing
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        glfwPollEvents();
+        // Update mouse inputs
+        double mouseX, mouseY;
+        glfwGetCursorPos(pWindow, &mouseX, &mouseY);
+        io.MousePos = ImVec2(static_cast<float>(mouseX), static_cast<float>(mouseY));
+        io.MouseDown[0] = glfwGetMouseButton(pWindow, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+        io.MouseDown[1] = glfwGetMouseButton(pWindow, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
 
-        process_input(pWindow);
+        if (!io.WantCaptureMouse)
+            process_input(pWindow);
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
 
         lightningShader.use();
         lightningShader.setValue("objectColor", 1.0f, 0.5f, 0.31f);
@@ -245,24 +261,19 @@ int main(int argc, char* argv[]) {
         glBindVertexArray(lightCubeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
-        // Start ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        // Create UI
-        ImGui::Begin("Debugger   ");
-        ImGui::Text("FPS = %d FPS", mathes::clamp((int)(1/deltaTime), 0, 100000000));
+        // Your ImGui widgets here
+        ImGui::Begin("Debugger");
+        ImGui::Text("FPS: %d", (int)(1/deltaTime));
+        ImGui::Text("Frame time: %fs", (float)(deltaTime));
+        ImGui::Checkbox("Mouse Captured", &cursorCapture);
         ImGui::End();
 
-        // Render ImGui
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-
-        //window.update();
-        glfwSwapBuffers(pWindow);
+        window.update();
     }
+
 
     glDeleteVertexArrays(1, &cubeVAO);
     glDeleteVertexArrays(1, &lightCubeVAO);
