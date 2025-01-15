@@ -1,15 +1,28 @@
 #pragma once
-#include <GLFW/glfw3.h>
+
+#include <SDL3/SDL.h>
+#include <Logger.hpp>
 #include <string>
 
 class Window {
 public:
-    typedef GLFWwindow* window_t;
-    uint32_t w, h;
+	typedef SDL_Window* window_t;
+	typedef SDL_Surface* surface_t;
+	typedef SDL_Event event_t;
 
-    Window(std::string title, int width, int height, bool isResizable, bool isFullscreen, bool vsync);
-    void update();
-    bool shouldClose();
-    window_t getPointer();
-    ~Window();
+	struct WindowConstructInfo {
+		const std::string title;
+		const int width;
+		const int height;
+		const bool resizable;
+	};
+
+	enum EVENTS {
+		ECLIPSE_EVENT_QUIT = SDL_EVENT_QUIT
+	};
+
+	Window(WindowConstructInfo& window_construct_info);
+	void update() const;
+	event_t getEvents() const;
+	~Window();
 };

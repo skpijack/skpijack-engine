@@ -1,69 +1,41 @@
 #include "Window.hpp"
-#include "Logger.hpp"
 
-Window::window_t pointerWindow;
+Window::window_t gWindow{ nullptr };
+Window::surface_t gSurface{ nullptr };
+SDL_Event gEvent;
 
-Window::Window(std::string title, int width, int height, bool isResizable, bool isFullscreen, bool vsync) {
+Window::Window(Window::WindowConstructInfo& window_construct_info) {
+	// Check if SDL not intialized
+	if (!SDL_Init(SDL_INIT_VIDEO))
+		io::printErrorAndExit("Failed to Load SDL!");
+	
+	// Create Window
+	gWindow = SDL_CreateWindow(window_construct_info.title.c_str(), window_construct_info.width, window_construct_info.height, 0);
+	
+	// Check for success
+	if (gWindow == nullptr)
+		io::printError("Window Couldn't be created!");
 
-    if (!glfwInit())
-        mog::it("failed to initialize window manager!", 0);
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_RESIZABLE, isResizable);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_SAMPLES, 4);
-
-    if (!isFullscreen) {
-        pointerWindow = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
-        w = width;
-        h = height;
-    }
-    else {
-        GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
-        if (!primaryMonitor) {
-            mog::it("Failed to get primary monitor!", 1);
-            glfwTerminate();
-        }
-
-        const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
-        if (!mode) {
-            mog::it("Failed to get video mode!", 1);
-            glfwTerminate();
-        }
-
-        w = mode->width;
-        h = mode->height;
-
-        pointerWindow = glfwCreateWindow(mode->width, mode->height, title.c_str(), primaryMonitor, NULL);
-    }
-
-    if (pointerWindow == NULL) {
-        mog::it("failed to create window!", 1);
-        glfwTerminate();
-        std::exit(-2);
-    }
-
-    glfwMakeContextCurrent(pointerWindow);
-
-    if (vsync)
-        glfwSwapInterval(1);
+	// Get Surface
+	gSurface = SDL_GetWindowSurface(gWindow);
 }
 
-void Window::update() {
-    glfwSwapBuffers(pointerWindow);
-    glfwPollEvents();
+void Window::update() const {
+	SDL_FillSurfaceRect(gSurface, nullptr, SDL_MapSurfaceRGB(gSurface, 0x00, 0xFF, 0xFF));
+	SDL_UpdateWindowSurface(gWindow);
 }
 
-Window::window_t Window::getPointer() {
-    return pointerWindow;
-}
-
-bool Window::shouldClose() {
-    return glfwWindowShouldClose(pointerWindow);
+Window::event_t Window::getEvents() const {
+	SDL_PollEvent(&gEvent);
+	return gEvent;
 }
 
 Window::~Window() {
-    if (pointerWindow != NULL)
-        glfwTerminate();
+	// Destroy Window
+	SDL_DestroyWindow(gWindow);
+	gWindow = nullptr;
+	gSurface = nullptr;
+
+	// Quit SDL Subsystems
+	SDL_Quit();
 }

@@ -2,22 +2,20 @@ cmake_minimum_required(VERSION 3.10)
 
 project(EclipseEngine)
 
-add_subdirectory(thirdParty/glfw)
+add_subdirectory(thirdparty/SDL)
+add_subdirectory(thirdparty/fmt)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
 include_directories(src)
-include_directories(thirdParty/glfw/include)
-include_directories(thirdParty/imgui)
+include_directories(thirdParty/SDL/include)
+include_directories(thirdParty/fmt/include)
+# include_directories(thirdParty/imgui)
 
 file(GLOB MAIN_SRC src/*)
 file(GLOB SHADERS_SRC src/Shaders/*)
 
-add_executable(EclipseEngine ${MAIN_SRC} ${SHADERS_SRC}
-thirdParty/imgui/imgui.cpp 
-thirdParty/imgui/imgui_draw.cpp 
-thirdParty/imgui/imgui_widgets.cpp 
-thirdParty/imgui/imgui_tables.cpp
-thirdParty/imgui/backends/imgui_impl_glfw.cpp
-thirdParty/imgui/backends/imgui_impl_opengl3.cpp
-)
+add_executable(EclipseEngine ${MAIN_SRC})
 
-target_link_libraries(EclipseEngine PUBLIC glfw)
+target_link_libraries(EclipseEngine PUBLIC SDL3::SDL3-static fmt::fmt)

@@ -13,11 +13,11 @@ Uses CMake
 > Use `--recursive` to clone.
 
 ```bash
-git clone https://github.com/Sherry65-code/EclipsEngine --depth 1 --recursive
+git clone https://github.com/Sherry65-code/EclipsEngine --depth 1 --recursive --branch vulkan
 cd EclipseEngine
 mkdir build
 cd build
 cmake ..
 ```
 
-Uses OpenGL, GLFW and ImGUI.
+Please give a ⭐ if you liked this engine :)
