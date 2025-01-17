@@ -5,7 +5,6 @@
 
 evk::evko evkos{};
 
-
 uint32_t evk::select_physical_device(std::vector<VkPhysicalDevice> _physical_devices) {
 	// Loop through all devices
 	for (uint32_t i = 0; i < _physical_devices.size(); i++) {
@@ -132,4 +131,9 @@ void evk::init_physical_devices() {
     vkGetDeviceQueue(evkos.device, evkos.graphicsQueueFamilyIndex, 0, &evkos.graphicsQueue);
 
     io::printDebug("Created Logical Device!");
+}
+
+void evk::cleanup() {
+    vkDestroyDevice(evkos.device, nullptr);
+    vkDestroyInstance(evkos.instance, nullptr);
 }

@@ -19,4 +19,6 @@ namespace evk {
 
 	void init_instance();
 	void init_physical_devices();
+
+	void cleanup();
 };

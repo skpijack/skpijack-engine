@@ -1,5 +1,6 @@
 #include <Window.hpp>
 #include <EclipseVulkan/vkcore.hpp>
+#include <EclipseFileSystem/efs.hpp>
 
 int main(int argc, char* argv[]) {
 	// Initialize Window
@@ -13,4 +14,6 @@ int main(int argc, char* argv[]) {
 	while (window.getEvents().type != Window::ECLIPSE_EVENT_QUIT) {
 		window.update();
 	}
+
+	evk::cleanup();
 }
