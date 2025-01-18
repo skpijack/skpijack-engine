@@ -1,7 +1,7 @@
 #pragma once
 
 #include <SDL3/SDL.h>
-#include <Logger.hpp>
+#include <IO.hpp>
 #include <string>
 
 class Window {

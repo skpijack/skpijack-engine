@@ -1,6 +1,7 @@
 #include <Window.hpp>
 #include <EclipseVulkan/vkcore.hpp>
 #include <EclipseFileSystem/efs.hpp>
+#include <EclipseStandardLibrary/vector.hpp>
 
 int main(int argc, char* argv[]) {
 	// Initialize Window
