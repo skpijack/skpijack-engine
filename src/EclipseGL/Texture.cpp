@@ -1,12 +1,14 @@
 #include "Texture.hpp"
-#include "Logger.hpp"
+#include <EclipseUtils/Logger.hpp>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-Texture::Texture(std::string texture_path) {
+using namespace e;
+
+texture::texture(std::string texture_path) {
 	int width, height, nrChannels;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	glGenTextures(1, &_texture);
+	glBindTexture(GL_TEXTURE_2D, _texture);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -29,17 +31,17 @@ Texture::Texture(std::string texture_path) {
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else {
-		mog::it("Failed to load texture!", 1);
+		LOG::SEND("Failed to load texture!");
 	}
 	
 	stbi_image_free(data);
 }
 
-void Texture::bind() {
-	glBindTexture(GL_TEXTURE_2D, texture);
+void texture::bind() {
+	glBindTexture(GL_TEXTURE_2D, _texture);
 }
 
-void Texture::bind(GLenum index) {
+void texture::bind(GLenum index) {
 	glActiveTexture(index);
 	bind();
 }

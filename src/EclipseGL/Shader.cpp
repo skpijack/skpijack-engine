@@ -1,5 +1,5 @@
 #include "Shader.hpp"
-#include "Logger.hpp"
+#include <EclipseUtils/Logger.hpp>
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath) {
 	std::string vertexCode;
@@ -25,7 +25,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
 		fragmentCode = fShaderStream.str();
 	}
 	catch (std::ifstream::failure e) {
-		mog::it("Couldnt read shader file :(", 1);
+		LOG::SEND("Failed to read shader!");
 	}
 
 	const char* vShaderCode = vertexCode.c_str();
@@ -43,7 +43,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
 
 	if (!success) {
 		glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-		mog::it("Vertex Shader Compilation Failed!", 1);
+		LOG::SEND("Vertex Shader Compilation Failed!");
 		std::cout << infoLog << std::endl;
 	}
 
@@ -55,7 +55,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
 
 	if (!success) {
 		glGetShaderInfoLog(fragment, 512, NULL, infoLog);
-		mog::it("Fragment Shader Compilation Failed!", 1);
+		LOG::SEND("Fragment Shader Compilation Failed!");
 		std::cout << infoLog << std::endl;
 	}
 
@@ -66,7 +66,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
 	glGetProgramiv(ID, GL_LINK_STATUS, &success);
 	if (!success) {
 		glGetProgramInfoLog(ID, 512, NULL, infoLog);
-		mog::it("Shader Linking Failed :(", 1);
+		LOG::SEND("Shader Linking Failed :(");
 		std::cout << infoLog << std::endl;
 	}
 
