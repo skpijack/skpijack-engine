@@ -56,12 +56,11 @@ window::window(window::WindowCreateInfo& window_create_info) {
 	}
 
 	glfwSetFramebufferSizeCallback(pwindow, window_create_info.resize_callback);
+	glfwSetCursorPosCallback(pwindow, window_create_info.cursor_pos_callback);
 
 	glfwMakeContextCurrent(pwindow);
 
-	if (window_create_info.vsync) {
-		glfwSwapInterval(1);
-	}
+	glfwSwapInterval(window_create_info.vsync);
 }
 
 void window::update() const {

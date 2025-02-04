@@ -5,18 +5,73 @@
 #include <implot.h>
 #include <implot_internal.h>
 
-#include <EclipseGL/GL.hpp>
+//#include <EclipseGL/GL.hpp>
+#include <glad/glad.h>
 #include <EclipseRuntime/Window.hpp>
 #include <EclipseUtils/Logger.hpp>
 #include <EclipseUtils/Maths.hpp>
+#include <EclipseGL/Mesh.hpp>
+#include <EclipseGL/Shader.hpp>
+#include <EclipseGL/Texture.hpp>
+#include <EclipseGL/Camera.hpp>
+#include <EclipseFileSystem/ModelLoader.hpp>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <vector>
+#include <string>
+
+void static framebuffer_size_callback(et::window, int, int);
+void static mouse_callback(et::window, double, double);
+
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+const float cameraSpeed = 2.5f;
+static bool cursorCapture = false;
 
 double delta = 0;
-bool vsync = false;
+bool vsync = true;
+bool wireframe = false;
+
+float obj_color[] = {1, 1, 1};
 
 std::vector<double> frametimes;
-const size_t max_points = 100; 
+const size_t max_points = 100;
+
+e::window* pwindow;
+
+void static framebuffer_size_callback(et::window _w, int width, int height) {
+	e::window window = *pwindow;
+	glViewport(0, 0, width, height);
+	window.window_height = height;
+	window.window_width = width;
+}
+
+static void mouse_callback(et::window _w, double xposIn, double yposIn) {
+	e::window window = *pwindow;
+	static bool firstMouse = true;
+	static float lastX = window.window_width / 2.0;
+	static float lastY = window.window_height / 2.0;
+
+	float xpos = static_cast<float>(xposIn);
+	float ypos = static_cast<float>(yposIn);
+
+	if (firstMouse) {
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos;
+
+	lastX = xpos;
+	lastY = ypos;
+
+	if (cursorCapture)
+		camera.ProcessMouseMovement(xoffset, yoffset);
+}
 
 void static init_imgui(et::window _pwindow) {
 	// ImGui Initialize
@@ -41,8 +96,31 @@ void static destroy_imgui() {
 	ImGui::DestroyContext();
 }
 
-void static listen_to_input() {
+void static listen_to_input(e::window window) {
+	static bool escapeKeyPressed = false;
 
+	if (window.getKeyState(E_KEY_ESCAPE) == E_PRESS) {
+		if (!escapeKeyPressed) {
+			if (!cursorCapture) {
+				glfwSetInputMode(window.pwindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			}
+			else {
+				glfwSetInputMode(window.pwindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			}
+			cursorCapture = !cursorCapture;
+			escapeKeyPressed = true;
+		}
+	}
+	else if (window.getKeyState(E_KEY_ESCAPE) == E_RELEASE) {
+		escapeKeyPressed = false;
+	}
+
+
+	float deltaCameraSpeed = cameraSpeed * delta;
+	if (window.getKeyState(E_KEY_W) == E_PRESS) camera.ProcessKeyboard(FORWARD, deltaCameraSpeed);
+	if (window.getKeyState(E_KEY_A) == E_PRESS) camera.ProcessKeyboard(LEFT, deltaCameraSpeed);
+	if (window.getKeyState(E_KEY_S) == E_PRESS) camera.ProcessKeyboard(BACKWARD, deltaCameraSpeed);
+	if (window.getKeyState(E_KEY_D) == E_PRESS) camera.ProcessKeyboard(RIGHT, deltaCameraSpeed);
 }
 
 et::u32 static display_with_interval(et::u32 value, et::u32 interval) {
@@ -58,16 +136,19 @@ et::u32 static display_with_interval(et::u32 value, et::u32 interval) {
 
 int main(int argc, char* argv[]) {
 	// Create window
-	e::window window(e::window::WindowCreateInfo{"Eclipse", 800, 600, true, false, vsync, 4});
+	e::window window(e::window::WindowCreateInfo{ "Eclipse", 800, 600, true, false, vsync, 4, framebuffer_size_callback, mouse_callback });
+	pwindow = &window;
 
 	// Create OpenGL Context
-	e::gl gl((GLADloadproc)e::window::getProcAddress);
+	if (!gladLoadGLLoader((GLADloadproc)e::window::getProcAddress)) {
+		LOG::SEND("Failed to find opengl context!");
+	}
 
 	// Set viewport
-	gl.set_viewport_size(0, 0, window.window_width, window.window_height);
+	glViewport(0, 0, window.window_width, window.window_height);
 
 	// Enable MSAA
-	gl.enable(GL_MULTISAMPLE);
+	glEnable(GL_MULTISAMPLE);
 
 	// Enable blending
 	glEnable(GL_BLEND);
@@ -75,6 +156,17 @@ int main(int argc, char* argv[]) {
 
 	// Initalize ImGUI
 	init_imgui(window.pwindow);
+
+	// GL setup
+	e::shader testshader("../src/Shaders/TestShader.v.glsl", "../src/Shaders/TestShader.f.glsl");
+
+	// Each vertex consists of 6 floats: 3 for position and 3 for normal
+	std::string file_loc = "../assets/teapot.obj";
+	et::model testmodel = e::loader::loadobj(file_loc);
+
+	e::mesh testmesh(testmodel.vertices, testmodel.indices);
+
+	glEnable(GL_DEPTH_TEST);
 
 	// mainloop
 	while (!window.shouldClose()) {
@@ -87,7 +179,7 @@ int main(int argc, char* argv[]) {
 			frametimes.erase(frametimes.begin());
 		
 		// Input
-		listen_to_input();
+		listen_to_input(window);
 
 		// Clear framebuffer before draw
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -98,12 +190,23 @@ int main(int argc, char* argv[]) {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
+		// Camera setup
+		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)window.window_width / (float)window.window_height, 0.1f, 10000.0f);
+		glm::mat4 view = camera.GetViewMatrix();
+		glm::mat4 model = glm::mat4(1.0f);
+
 		// GL Layer
+		testshader.use();
+		testshader.setValue("projection", projection);
+		testshader.setValue("view", view);
+		testshader.setValue("model", model);
+		testshader.setValue("_color", obj_color[0], obj_color[1], obj_color[2]);
+		testmesh.draw();
 
 		// UI Layer 
 		ImGui::Begin("Debugger");
 		
-		ImGui::Text("FPS: %d", display_with_interval(e::maths::ceil(1 / delta), 100));
+		ImGui::Text("FPS: %d", display_with_interval(e::maths::ceil(1.0 / delta), 100));
 
 		if (ImPlot::BeginPlot("Frametime Graph", ImVec2(-1, 150))) {
 			// Optional: setup axes labels and automatic fitting
@@ -116,11 +219,14 @@ int main(int argc, char* argv[]) {
 
 			ImPlot::PushStyleColor(ImPlotCol_Line, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
 			ImPlot::PlotLine("Frame Time", xs.data(), frametimes.data(), static_cast<int>(frametimes.size()));
-			ImPlot::PopStyleColor();  // Restore previous style
+			ImPlot::PopStyleColor();
 			ImPlot::EndPlot();
 		}
 
 		ImGui::Checkbox("Vsync", &vsync);
+		ImGui::Checkbox("Wireframe", &wireframe);
+
+		ImGui::ColorEdit3("Object Color", obj_color);
 
 		ImGui::End();
 		ImGui::Render();
@@ -132,6 +238,11 @@ int main(int argc, char* argv[]) {
 			window.setVsync(true);
 		else
 			window.setVsync(false);
+
+		if (wireframe)
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		else
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		window.update();
 	}

@@ -231,6 +231,7 @@ namespace e {
 			bool vsync;
 			et::msaasamples samples;
 			GLFWframebuffersizefun resize_callback;
+			GLFWcursorposfun cursor_pos_callback;
 		};
 
 		window(WindowCreateInfo& window_create_info);

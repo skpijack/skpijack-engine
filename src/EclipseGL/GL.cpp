@@ -17,7 +17,6 @@ void gl::enable(et::u32 flag) {
 	glEnable(flag);
 }
 
-
 gl::~gl() {
 
 }
