@@ -33,8 +33,11 @@ static bool cursorCapture = false;
 double delta = 0;
 bool vsync = true;
 bool wireframe = false;
+bool normal = false;
 
-float obj_color[] = {1, 1, 1};
+float obj_color[] = { 1, 1, 1 };
+float light_color[] = { 1, 1, 1 };
+float light_pos[] = { 1, 1, 1 };
 
 std::vector<double> frametimes;
 const size_t max_points = 100;
@@ -159,6 +162,7 @@ int main(int argc, char* argv[]) {
 
 	// GL setup
 	e::shader testshader("../src/Shaders/TestShader.v.glsl", "../src/Shaders/TestShader.f.glsl");
+	e::shader normalshader("../src/Shaders/NormalDebug.v.glsl", "../src/Shaders/NormalDebug.f.glsl");
 
 	// Each vertex consists of 6 floats: 3 for position and 3 for normal
 	std::string file_loc = "../assets/teapot.obj";
@@ -196,11 +200,22 @@ int main(int argc, char* argv[]) {
 		glm::mat4 model = glm::mat4(1.0f);
 
 		// GL Layer
-		testshader.use();
-		testshader.setValue("projection", projection);
-		testshader.setValue("view", view);
-		testshader.setValue("model", model);
-		testshader.setValue("_color", obj_color[0], obj_color[1], obj_color[2]);
+		if (normal) {
+			normalshader.use();
+			normalshader.setValue("projection", projection);
+			normalshader.setValue("view", view);
+			normalshader.setValue("model", model);
+		}
+		else {
+			testshader.use();
+			testshader.setValue("projection", projection);
+			testshader.setValue("view", view);
+			testshader.setValue("model", model);
+			testshader.setValue("lightPos", light_pos[0], light_pos[1], light_pos[2]);
+			testshader.setValue("lightColor", light_color[0], light_color[1], light_color[2]);
+			testshader.setValue("objectColor", obj_color[0], obj_color[1], obj_color[2]);
+			testshader.setValue("viewPos", camera.Position);
+		}
 		testmesh.draw();
 
 		// UI Layer 
@@ -225,8 +240,11 @@ int main(int argc, char* argv[]) {
 
 		ImGui::Checkbox("Vsync", &vsync);
 		ImGui::Checkbox("Wireframe", &wireframe);
+		ImGui::Checkbox("Normals", &normal);
 
 		ImGui::ColorEdit3("Object Color", obj_color);
+		ImGui::ColorEdit3("Light Color", light_color);
+		ImGui::DragFloat3("Light Position", light_pos);
 
 		ImGui::End();
 		ImGui::Render();
@@ -234,10 +252,7 @@ int main(int argc, char* argv[]) {
 		// Draw
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-		if (vsync)
-			window.setVsync(true);
-		else
-			window.setVsync(false);
+		window.setVsync(vsync);
 
 		if (wireframe)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
