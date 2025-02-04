@@ -37,7 +37,7 @@ bool normal = false;
 
 float obj_color[] = { 1, 1, 1 };
 float light_color[] = { 1, 1, 1 };
-float light_pos[] = { 1, 1, 1 };
+float light_pos[] = { 1006, 1668, -353 };
 
 std::vector<double> frametimes;
 const size_t max_points = 100;
@@ -45,17 +45,17 @@ const size_t max_points = 100;
 e::window* pwindow;
 
 void static framebuffer_size_callback(et::window _w, int width, int height) {
-	e::window window = *pwindow;
+	e::window* window = pwindow;
 	glViewport(0, 0, width, height);
-	window.window_height = height;
-	window.window_width = width;
+	window->window_height = height;
+	window->window_width = width;
 }
 
 static void mouse_callback(et::window _w, double xposIn, double yposIn) {
-	e::window window = *pwindow;
+	e::window* window = pwindow;
 	static bool firstMouse = true;
-	static float lastX = window.window_width / 2.0;
-	static float lastY = window.window_height / 2.0;
+	static float lastX = window->window_width / 2.0;
+	static float lastY = window->window_height / 2.0;
 
 	float xpos = static_cast<float>(xposIn);
 	float ypos = static_cast<float>(yposIn);
