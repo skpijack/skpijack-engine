@@ -8,6 +8,7 @@
 #include <EclipseGL/GL.hpp>
 #include <EclipseRuntime/Window.hpp>
 #include <EclipseUtils/Logger.hpp>
+#include <EclipseUtils/Maths.hpp>
 
 #include <vector>
 
@@ -44,6 +45,17 @@ void static listen_to_input() {
 
 }
 
+et::u32 static display_with_interval(et::u32 value, et::u32 interval) {
+	static et::u32 interval_timer = 0;
+	static et::u32 display_with_interval_previous_value = 0;
+	interval_timer++;
+	if (interval_timer > interval) {
+		interval_timer = 0;
+		display_with_interval_previous_value = value;
+	}
+	return display_with_interval_previous_value;
+}
+
 int main(int argc, char* argv[]) {
 	// Create window
 	e::window window(e::window::WindowCreateInfo{"Eclipse", 800, 600, true, false, vsync, 4});
@@ -73,8 +85,9 @@ int main(int argc, char* argv[]) {
 		frametimes.push_back(ms);
 		if (frametimes.size() > max_points)
 			frametimes.erase(frametimes.begin());
-		// Input
 		
+		// Input
+		listen_to_input();
 
 		// Clear framebuffer before draw
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -90,7 +103,7 @@ int main(int argc, char* argv[]) {
 		// UI Layer 
 		ImGui::Begin("Debugger");
 		
-		ImGui::Text("FPS: %d", (int)(1 / delta));
+		ImGui::Text("FPS: %d", display_with_interval(e::maths::ceil(1 / delta), 100));
 
 		if (ImPlot::BeginPlot("Frametime Graph", ImVec2(-1, 150))) {
 			// Optional: setup axes labels and automatic fitting
