@@ -3,10 +3,10 @@
 using namespace e;
 
 scene::scene() {
-	mainCamera = camera(glm::vec3(0.0f, 0.0f, 3.0f));
+	mainCamera = &camera(glm::vec3(0.0f, 0.0f, 3.0f));
 }
 
-scene::scene(camera& camera) {
+scene::scene(camera* camera) {
 	mainCamera = camera;
 }
 

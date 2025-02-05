@@ -5,9 +5,7 @@ using namespace e;
 mesh::mesh(const std::vector<float>& vertices, const std::vector<et::u32>& indices) {
 	// Get array size
 	indexCount = indices.size();
-	// Argument count defines the count of number of points on the vertices array for single time argument buffer
-	// for ex. // Vertex 1, 2, 3, // Normals 4, 5, 6 so total is 6 for each line
-	et::u32 argumentCount = 6; 
+	et::u32 argumentCount = 6; // Should be configurable if layout changes
 
 	// Generate buffers
 	glGenVertexArrays(1, &VAO);
@@ -24,13 +22,11 @@ mesh::mesh(const std::vector<float>& vertices, const std::vector<et::u32>& indic
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(et::u32), indices.data(), GL_STATIC_DRAW);
 
-	// Position Attributes
-	// (0 -> 2) vertex
+	// Position Attributes (0 -> 2) vertex
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, argumentCount * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	// Normal Attributes
-	// (3->5) normals
+	// Normal Attributes (3 -> 5) normals
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, argumentCount * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
@@ -38,7 +34,6 @@ mesh::mesh(const std::vector<float>& vertices, const std::vector<et::u32>& indic
 }
 
 void mesh::draw() const {
-	// Bind, draw, unbindd
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
@@ -48,4 +43,34 @@ mesh::~mesh() {
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
 	glDeleteVertexArrays(1, &VAO);
+}
+
+// Move Constructor
+mesh::mesh(mesh&& other) noexcept
+	: VAO(other.VAO), VBO(other.VBO), EBO(other.EBO), indexCount(other.indexCount) {
+	other.VAO = 0;
+	other.VBO = 0;
+	other.EBO = 0;
+}
+
+// Move Assignment
+mesh& mesh::operator=(mesh&& other) noexcept {
+	if (this != &other) {
+		// Cleanup existing resources
+		glDeleteBuffers(1, &VBO);
+		glDeleteBuffers(1, &EBO);
+		glDeleteVertexArrays(1, &VAO);
+
+		// Move ownership
+		VAO = other.VAO;
+		VBO = other.VBO;
+		EBO = other.EBO;
+		indexCount = other.indexCount;
+
+		// Reset old object
+		other.VAO = 0;
+		other.VBO = 0;
+		other.EBO = 0;
+	}
+	return *this;
 }
