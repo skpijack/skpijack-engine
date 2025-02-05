@@ -17,6 +17,7 @@ window::window(window::WindowCreateInfo& window_create_info) {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, window_create_info.resizable);
 	glfwWindowHint(GLFW_SAMPLES, window_create_info.samples);
+	glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
 
 	if (window_create_info.fullscreen) {
 		monitor = glfwGetPrimaryMonitor();

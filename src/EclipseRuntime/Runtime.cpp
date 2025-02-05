@@ -86,6 +86,7 @@ void static init_imgui(et::window _pwindow) {
 	io.Fonts->AddFontFromFileTTF("../assets/Poppins-Regular.ttf", 15);
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
 	ImGui::StyleColorsDark();
 
@@ -149,6 +150,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	// Set viewport
+	glfwGetWindowSize(window.pwindow, &window.window_width, &window.window_height);
 	glViewport(0, 0, window.window_width, window.window_height);
 
 	// Enable MSAA
@@ -269,6 +271,16 @@ int main(int argc, char* argv[]) {
 		ImGui::End();
 
 		ImGui::Begin("Scene Hierarchy");
+
+		for (et::object& object : mainscene.objects) {
+			if (ImGui::TreeNode(object.name.c_str())) {
+				ImGui::Text("Component: Transform");
+				ImGui::DragFloat3("Location", &object.transform.position[0], 0.2f);
+				ImGui::DragFloat3("Rotation", &object.transform.rotation[0], 0.2f);
+				ImGui::DragFloat3("Scale", &object.transform.scale[0], 0.2f);
+				ImGui::TreePop();
+			}
+		}
 
 		ImGui::End();
 
