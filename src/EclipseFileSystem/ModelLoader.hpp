@@ -21,6 +21,6 @@ namespace et {
 namespace e {
 	class loader {
 	public:
-		static et::model loadobj(const std::string& file_location);
+		static et::model loadobj(const char* file_location);
 	};
 };

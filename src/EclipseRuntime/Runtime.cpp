@@ -15,6 +15,7 @@
 #include <EclipseGL/Texture.hpp>
 #include <EclipseGL/Camera.hpp>
 #include <EclipseFileSystem/ModelLoader.hpp>
+#include <EclipseScene/SceneManager.hpp>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -26,7 +27,7 @@
 void static framebuffer_size_callback(et::window, int, int);
 void static mouse_callback(et::window, double, double);
 
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+e::camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 const float cameraSpeed = 2.5f;
 static bool cursorCapture = false;
 
@@ -164,11 +165,17 @@ int main(int argc, char* argv[]) {
 	e::shader testshader("../src/Shaders/TestShader.v.glsl", "../src/Shaders/TestShader.f.glsl");
 	e::shader normalshader("../src/Shaders/NormalDebug.v.glsl", "../src/Shaders/NormalDebug.f.glsl");
 
-	// Each vertex consists of 6 floats: 3 for position and 3 for normal
-	std::string file_loc = "../assets/teapot.obj";
-	et::model testmodel = e::loader::loadobj(file_loc);
+	
+	e::scene mainscene(camera);
 
-	e::mesh testmesh(testmodel.vertices, testmodel.indices);
+	et::model model1 = e::loader::loadobj("../assets/teapot.obj");
+	e::mesh mesh1(model1.vertices, model1.indices);
+
+	et::object object{};
+	object.name = "Kettle";
+	object.mesh = &mesh1;
+	object.transform = et::transform{ glm::vec3{0, 0, 0}, glm::vec3{0, 0, 0}, glm::vec3{1, 1, 1} };
+	mainscene.push_object(object);
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -216,7 +223,7 @@ int main(int argc, char* argv[]) {
 			testshader.setValue("objectColor", obj_color[0], obj_color[1], obj_color[2]);
 			testshader.setValue("viewPos", camera.Position);
 		}
-		testmesh.draw();
+		mainscene.objects[0].mesh->draw();
 
 		// UI Layer 
 		ImGui::Begin("Debugger");

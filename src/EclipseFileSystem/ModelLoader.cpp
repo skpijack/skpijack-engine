@@ -6,13 +6,13 @@
 
 using namespace e;
 
-et::model loader::loadobj(const std::string& file_location) {
+et::model loader::loadobj(const char* file_location) {
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
     std::string warn, err;
 
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, file_location.c_str())) {
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, file_location)) {
         LOG::SEND("Failed to load OBJ file!");
         throw std::runtime_error("Failed to load OBJ file");
     }
