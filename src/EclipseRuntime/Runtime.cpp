@@ -23,6 +23,7 @@
 
 #include <vector>
 #include <string>
+#include <array>
 
 void static framebuffer_size_callback(et::window, int, int);
 void static mouse_callback(et::window, double, double);
@@ -36,9 +37,9 @@ bool vsync = true;
 bool wireframe = false;
 bool normal = false;
 
-float obj_color[] = { 1, 1, 1 };
-float light_color[] = { 1, 1, 1 };
-float light_pos[] = { 1006, 1668, -353 };
+glm::vec3 obj_color = { 1.0f, 1.0f, 1.0f };
+glm::vec3 light_color = { 1.0f, 1.0f, 1.0f };
+glm::vec3 light_pos = { 1006.0f, 1668.0f, -353.0f };
 
 std::vector<double> frametimes;
 const size_t max_points = 100;
@@ -175,11 +176,15 @@ int main(int argc, char* argv[]) {
 
 	et::model model1 = e::loader::loadobj("../assets/teapot.obj");
 	e::mesh mesh1(model1.vertices, model1.indices);
-	e::material material1("Material 1", &normalshader);
+	e::material material1("Material 1", &testshader);
 
 	material1.set("projection", &projection);
 	material1.set("view", &view);
 	material1.set("model", &model);
+	material1.set("lightPos", &light_pos);
+	material1.set("lightColor", &light_color);
+	material1.set("objectColor", &obj_color);
+	material1.set("viewPos", &camera.Position);
 
 	et::object object{};
 	object.name = "Kettle";
@@ -255,9 +260,9 @@ int main(int argc, char* argv[]) {
 		ImGui::Checkbox("Wireframe", &wireframe);
 		ImGui::Checkbox("Normals", &normal);
 
-		ImGui::ColorEdit3("Object Color", obj_color);
-		ImGui::ColorEdit3("Light Color", light_color);
-		ImGui::DragFloat3("Light Position", light_pos);
+		ImGui::ColorEdit3("Object Color", &obj_color[0]);
+		ImGui::ColorEdit3("Light Color", &light_color[0]);
+		ImGui::DragFloat3("Light Position", &light_pos[0]);
 
 		ImGui::End();
 

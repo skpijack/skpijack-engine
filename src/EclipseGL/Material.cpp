@@ -10,8 +10,12 @@ void material::set(const char* name, glm::mat4* value) {
 	mat4Uniforms[name] = value;
 }
 
-void material::set(const char* name, float value) {
+void material::set(const char* name, float* value) {
 	floatUniforms[name] = value;
+}
+
+void material::set(const char* name, float** value) {
+	floatDUniforms[name] = value;
 }
 
 void material::set(const char* name, e::texture* texture) {
@@ -27,7 +31,7 @@ void material::apply() {
 		shader->setValue(pair.first, *pair.second);
 	}
 	for (const auto& pair : floatUniforms) {
-		shader->setValue(pair.first, pair.second);
+		shader->setValue(pair.first, *pair.second);
 	}
 	for (const auto& pair : textures) {
 		pair.second->bind();
