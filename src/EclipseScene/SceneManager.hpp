@@ -6,6 +6,7 @@
 
 #include <EclipseGL/Mesh.hpp>
 #include <EclipseGL/Camera.hpp>
+#include <EclipseGL/Material.hpp>
 
 #include <vector>
 #include <string>
@@ -29,6 +30,8 @@ namespace et {
 		std::string name;
 		et::transform transform;
 		e::mesh* mesh;
+		e::material* material;
+
 		std::vector<object> children;
 	};
 };

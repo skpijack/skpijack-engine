@@ -167,26 +167,35 @@ int main(int argc, char* argv[]) {
 	e::shader testshader("../src/Shaders/TestShader.v.glsl", "../src/Shaders/TestShader.f.glsl");
 	e::shader normalshader("../src/Shaders/NormalDebug.v.glsl", "../src/Shaders/NormalDebug.f.glsl");
 
-	
 	e::scene mainscene(&camera);
+
+	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)window.window_width / (float)window.window_height, 0.1f, 10000.0f);
+	glm::mat4 view = mainscene.mainCamera->GetViewMatrix();
+	glm::mat4 model = glm::mat4(1);
 
 	et::model model1 = e::loader::loadobj("../assets/teapot.obj");
 	e::mesh mesh1(model1.vertices, model1.indices);
+	e::material material1("Material 1", &normalshader);
+
+	material1.set("projection", &projection);
+	material1.set("view", &view);
+	material1.set("model", &model);
 
 	et::object object{};
 	object.name = "Kettle";
 	object.mesh = &mesh1;
 	object.transform = et::transform{ glm::vec3{0, 0, 0}, glm::vec3{0, 0, 0}, glm::vec3{1, 1, 1} };
+	object.material = &material1;
 	mainscene.push_object(object);
 
-	et::model model2 = e::loader::loadobj("../assets/bottle.obj");
-	e::mesh mesh2(model2.vertices, model2.indices);
+	//et::model model2 = e::loader::loadobj("../assets/bottle.obj");
+	//e::mesh mesh2(model2.vertices, model2.indices);
 
-	et::object object2{};
-	object2.name = "Bottle";
-	object2.mesh = &mesh2;
-	object2.transform = et::transform{ glm::vec3{5, 5, 0}, glm::vec3{0, 0, 0}, glm::vec3{.2, .2, .2} };
-	mainscene.push_object(object2);
+	//et::object object2{};
+	//object2.name = "Bottle";
+	//object2.mesh = &mesh2;
+	//object2.transform = et::transform{ glm::vec3{5, 5, 0}, glm::vec3{0, 0, 0}, glm::vec3{.2, .2, .2} };
+	//mainscene.push_object(object2);
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -213,30 +222,12 @@ int main(int argc, char* argv[]) {
 		ImGui::NewFrame();
 
 		// Camera setup
-		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)window.window_width / (float)window.window_height, 0.1f, 10000.0f);
-		glm::mat4 view = mainscene.mainCamera->GetViewMatrix();
+		projection = glm::perspective(glm::radians(camera.Zoom), (float)window.window_width / (float)window.window_height, 0.1f, 10000.0f);
+		view = mainscene.mainCamera->GetViewMatrix();
 
-		for (et::object object : mainscene.objects) {
-			glm::mat4 model = object.transform.mat4();
-
-			// GL Layer
-			if (normal) {
-				normalshader.use();
-				normalshader.setValue("projection", projection);
-				normalshader.setValue("view", view);
-				normalshader.setValue("model", model);
-			}
-			else {
-				testshader.use();
-				testshader.setValue("projection", projection);
-				testshader.setValue("view", view);
-				testshader.setValue("model", model);
-				testshader.setValue("lightPos", light_pos[0], light_pos[1], light_pos[2]);
-				testshader.setValue("lightColor", light_color[0], light_color[1], light_color[2]);
-				testshader.setValue("objectColor", obj_color[0], obj_color[1], obj_color[2]);
-				testshader.setValue("viewPos", camera.Position);
-			}
-
+		for (et::object& object : mainscene.objects) {
+			model = object.transform.mat4();
+			object.material->apply();
 			object.mesh->draw();
 		}
 		
