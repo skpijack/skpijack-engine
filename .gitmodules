@@ -3,7 +3,9 @@
 	url = https://github.com/glfw/glfw
 [submodule "thirdParty/imgui"]
 	path = thirdParty/imgui
-	url = https://github.com/Sherry65-code/imgui
-[submodule "thirdparty/implot"]
-	path = thirdparty/implot
+	url = https://github.com/Sherry65-code/imguigit submodule sync --recursive
+git submodule update --init --recursive
+
+[submodule "thirdParty/implot"]
+	path = thirdParty/implot
 	url = https://github.com/epezent/implot
