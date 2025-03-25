@@ -21,7 +21,7 @@ namespace e {
 		material(const std::string name, e::shader* shader) : name(name), shader(shader) {}
 
 		void set(const char* name, glm::vec3* value);
-		void material::set(const char* name, glm::mat4* value);
+		void set(const char* name, glm::mat4* value);
 		void set(const char* name, float* value);
 		void set(const char* name, float** value);
 		void set(const char* name, e::texture* texture);

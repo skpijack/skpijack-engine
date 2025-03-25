@@ -40,10 +40,10 @@ namespace e {
 	class scene {
 	public:
 		std::vector<et::object> objects;
-		e::camera* mainCamera;
+		e::camera* mainCamera{};
 
 		scene();
-		scene(e::camera* camera);
+		scene(e::camera& camera);
 
 		void push_object(et::object);
 

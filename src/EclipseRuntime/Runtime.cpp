@@ -141,8 +141,13 @@ et::u32 static display_with_interval(et::u32 value, et::u32 interval) {
 }
 
 int main(int argc, char* argv[]) {
+	// Fill create window struct
+	e::window::WindowCreateInfo createInfo{ "Eclipse", 800, 600, true, false, vsync, 4, framebuffer_size_callback, mouse_callback }; 
+
+
+	
 	// Create window
-	e::window window(e::window::WindowCreateInfo{ "Eclipse", 800, 600, true, false, vsync, 4, framebuffer_size_callback, mouse_callback });
+	e::window window(createInfo);
 	pwindow = &window;
 
 	// Create OpenGL Context
@@ -168,7 +173,7 @@ int main(int argc, char* argv[]) {
 	e::shader testshader("../src/Shaders/TestShader.v.glsl", "../src/Shaders/TestShader.f.glsl");
 	e::shader normalshader("../src/Shaders/NormalDebug.v.glsl", "../src/Shaders/NormalDebug.f.glsl");
 
-	e::scene mainscene(&camera);
+	e::scene mainscene(camera);
 
 	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)window.window_width / (float)window.window_height, 0.1f, 10000.0f);
 	glm::mat4 view = mainscene.mainCamera->GetViewMatrix();
